@@ -14,6 +14,8 @@ OUTPUT:
 }
 */
 
+// Defines the structure of the language AST
+
 export type NodeType =
   | "Program"
   | "NumericLiteral"
@@ -37,10 +39,12 @@ export interface BinaryExpr extends Expr {
   right: Expr, 
   operator: string
 }
+
 export interface Identifier extends Expr {
   kind: "Identifier", 
   symbol: string;
 }
+
 export interface NumericLiteral extends Expr {
   kind: "NumericLiteral", 
   value: number
