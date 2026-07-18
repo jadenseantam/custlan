@@ -7,16 +7,16 @@ export default class Parser {
 
     private not_eof(): boolean {
         return this.tokens[0].type != TokenType.EOF
-    }
+    } // check if the next token is not EOF
 
     private at() {
         return this.tokens[0] as Token // as Token means represent tokens[0] as value & type
-    }
+    } // get current token
 
     private eat() {
         const prev = this.tokens.shift() as Token;
         return prev;
-    } 
+    } // remove and return current token
 
     private expect(type: TokenType, err: any) {
         const prev = this.tokens.shift() as Token;
@@ -26,14 +26,14 @@ export default class Parser {
         }
 
         return prev
-    }
+    } // remove and return current token, with optional argument for error handling
 
     public produceAST (sourceCode: string): Program {
         this.tokens = tokenize(sourceCode)
         const program: Program = {
             kind: "Program",
             body: []
-        }
+        } 
 
         // Parse until EOF
         while (this.not_eof()) {
@@ -41,7 +41,7 @@ export default class Parser {
         }
 
         return program
-    }
+    } // the main function for the parser 
     
     private parse_stmt(): Stmt {
         return this.parse_expr();
@@ -65,8 +65,8 @@ export default class Parser {
             } as BinaryExpr
         }
         
-        return left; // Return the Additive Expression
-    }
+        return left; 
+    } // parse additive expr, get current value (left) --> get operator --> get right value --> return left (which is now a binary expr) 
 
     private parse_multiplicitive_expr(): Expr {
         let left = this.parse_primary_expr(); // Parse left side
@@ -82,34 +82,17 @@ export default class Parser {
             } as BinaryExpr
         }
         
-        return left; // Return the Additive Expression
-    }
-    /* Order of Prescidence
-    AssignmentExpr
-    MemberExprr
-    FunctionCall
-    LogicalExpr
-    ComparisonExpr
-    AddictiveExpr
-    MultiplicitaveExpr
-    UnaryExpr
-    PrimaryExpr
-    */
-
-    /* Order of Prescidence
-    AddictiveExpr
-    MultiplicitaveExpr
-    PrimaryExpr
-    */
-
+        return left; 
+    } // parse multiplicitive expr, get current value (left) --> get operator --> get right value --> return left (which is now a binary expr)
+    
     private parse_primary_expr(): Expr {
         const tk = this.at().type;
-
+        
         switch (tk) {
             case TokenType.Identifier: 
-                return { kind: "Identifier", symbol: this.eat().value } as Identifier
+            return { kind: "Identifier", symbol: this.eat().value } as Identifier
             case TokenType.Number: 
-                return { kind: "NumericLiteral", value: parseFloat(this.eat().value) } as NumericLiteral
+            return { kind: "NumericLiteral", value: parseFloat(this.eat().value) } as NumericLiteral
             case TokenType.OpenParen: {
                 this.eat() // Eat OpenParen
                 const value = this.parse_expr();
@@ -117,13 +100,28 @@ export default class Parser {
                 return value
             }
             default: 
-                console.error("Unexpected token found during parsing!", this.at());
-                Deno.exit(1);
+            console.error("Unexpected token found during parsing!", this.at());
+            Deno.exit(1);
         }
-    }
+    } // parse primary expr, check if the current token is an identifier, number, or open paren. If it's an identifier or number, return the corresponding AST node. If it's an open paren, parse the expression inside the parentheses and expect a closing paren. If none of these cases match, log an error and exit.
 }
 
-/*
+/* Order of Prescidence
+AssignmentExpr
+MemberExprr
+FunctionCall
+LogicalExpr
+ComparisonExpr
+AddictiveExpr
+MultiplicitaveExpr
+UnaryExpr
+PrimaryExpr
+
+Order of Prescidence
+AddictiveExpr
+MultiplicitaveExpr
+PrimaryExpr
+
 KNOWLEDGE LEARNT:
 1. Parse Stmt
 2. Parse Expr
