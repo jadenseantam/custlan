@@ -63,7 +63,8 @@ export function evaluate(astNode: Stmt): RuntimeVal {
 }
 
 /*
-1. Evaluate 
+1. Evaluate Node from parser
+2. Iterate through all children 
 
 
 evaluate node (from parser)
