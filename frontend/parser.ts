@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier } from "./ast.ts"
+import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, NullLiteral } from "./ast.ts"
 import { tokenize, Token, TokenType } from "./lexer.ts"
 
 export default class Parser {
@@ -28,12 +28,12 @@ export default class Parser {
         return prev
     } // remove and return current token, with optional argument for error handling
 
-    public produceAST (sourceCode: string): Program {
+    public produceAST(sourceCode: string): Program {
         this.tokens = tokenize(sourceCode)
         const program: Program = {
             kind: "Program",
             body: []
-        } 
+        }
 
         // Parse until EOF
         while (this.not_eof()) {
@@ -42,10 +42,10 @@ export default class Parser {
 
         return program
     } // the main function for the parser 
-    
+
     private parse_stmt(): Stmt {
         return this.parse_expr();
-    } 
+    }
 
     private parse_expr(): Expr {
         return this.parse_additive_expr();
@@ -59,13 +59,13 @@ export default class Parser {
             const right = this.parse_multiplicitive_expr(); // Parse right side
             left = {
                 kind: "BinaryExpr",
-                left, 
-                right, 
+                left,
+                right,
                 operator
             } as BinaryExpr
         }
-        
-        return left; 
+
+        return left;
     } // parse additive expr, get current value (left) --> get operator --> get right value --> return left (which is now a binary expr) 
 
     private parse_multiplicitive_expr(): Expr {
@@ -76,32 +76,36 @@ export default class Parser {
             const right = this.parse_primary_expr(); // Parse right side
             left = {
                 kind: "BinaryExpr",
-                left, 
-                right, 
+                left,
+                right,
                 operator
             } as BinaryExpr
         }
-        
-        return left; 
+
+        return left;
     } // parse multiplicitive expr, get current value (left) --> get operator --> get right value --> return left (which is now a binary expr)
-    
+
     private parse_primary_expr(): Expr {
         const tk = this.at().type;
-        
-        switch (tk) {
-            case TokenType.Identifier: 
-            return { kind: "Identifier", symbol: this.eat().value } as Identifier
-            case TokenType.Number: 
-            return { kind: "NumericLiteral", value: parseFloat(this.eat().value) } as NumericLiteral
+
+        switch (tk) { // this is the core logic for the ast in the body array
+            case TokenType.Identifier:
+                return { kind: "Identifier", symbol: this.eat().value } as Identifier
+            case TokenType.Number:
+                return { kind: "NumericLiteral", value: parseFloat(this.eat().value) } as NumericLiteral
             case TokenType.OpenParen: {
                 this.eat() // Eat OpenParen
                 const value = this.parse_expr();
                 this.expect(TokenType.CloseParen, "Unexpected token found inside parenthesised expression. Expected closing parenthesis.") // closing paren
                 return value
             }
-            default: 
-            console.error("Unexpected token found during parsing!", this.at());
-            Deno.exit(1);
+            case TokenType.Null: {
+                this.eat()
+                return { kind: "NullLiteral", value: "null" } as NullLiteral
+            }
+            default:
+                console.error("Unexpected token found during parsing!", this.at());
+                Deno.exit(1);
         }
     } // parse primary expr, check if the current token is an identifier, number, or open paren. If it's an identifier or number, return the corresponding AST node. If it's an open paren, parse the expression inside the parentheses and expect a closing paren. If none of these cases match, log an error and exit.
 }

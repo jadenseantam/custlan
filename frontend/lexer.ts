@@ -7,6 +7,7 @@
 // Define all TokenTypes (Character ==> TokenType)
 export enum TokenType {
     // Literal Types
+    Null, 
     Number, 
     Identifier, 
 
@@ -23,7 +24,8 @@ export enum TokenType {
 
 // Define all Keywords (Record<string, TokenType> is for objects: "string": "TokenType")
 const KEYWORDS: Record<string, TokenType> = {
-    'let': TokenType.Let    
+    let: TokenType.Let, 
+    null: TokenType.Null 
 }
 
 // Define the structure of a Token (must include the value & TokenType)
@@ -81,10 +83,10 @@ export function tokenize(sourceCode: string): Token[] {
 
                 // check for reserved keywords
                 const reserved = KEYWORDS[ident]
-                if (reserved === undefined) {
-                    tokens.push(token(ident, TokenType.Identifier))
-                } else {
+                if (typeof reserved === "number") {
                     tokens.push(token(ident, reserved))
+                } else {
+                    tokens.push(token(ident, TokenType.Identifier))
                 }
             } else if (isskippable(src[0])) {
                 src.shift(); // Skip the current character
