@@ -22,16 +22,26 @@ export type NodeType =
   | "Identifier"
   | "BinaryExpr";
 
-export interface Stmt {
-  kind: NodeType;
-}
-
+/*
+Statements do not result in a value at runtime.
+They contain one or more Expressions internally
+*/
+ export interface Stmt {
+   kind: NodeType;
+  }
+  
+/*
+Defines only a block which contains many statements.
+Only one program will be contained in a file
+*/
 export interface Program extends Stmt {
   kind: "Program",
   body: Stmt[]
 }
 
+/* Expression will result in a value at runtime unlike Statements */
 export interface Expr extends Stmt {}
+
 export interface BinaryExpr extends Expr {
   kind: "BinaryExpr"
   left: Expr, 

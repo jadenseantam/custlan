@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier} from "./ast.ts"
+import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier } from "./ast.ts"
 import { tokenize, Token, TokenType } from "./lexer.ts"
 
 export default class Parser {
