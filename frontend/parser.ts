@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier, NullLiteral } from "./ast.ts"
+import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier} from "./ast.ts"
 import { tokenize, Token, TokenType } from "./lexer.ts"
 
 export default class Parser {
@@ -98,10 +98,6 @@ export default class Parser {
                 const value = this.parse_expr();
                 this.expect(TokenType.CloseParen, "Unexpected token found inside parenthesised expression. Expected closing parenthesis.") // closing paren
                 return value
-            }
-            case TokenType.Null: {
-                this.eat()
-                return { kind: "NullLiteral", value: "null" } as NullLiteral
             }
             default:
                 console.error("Unexpected token found during parsing!", this.at());

@@ -7,7 +7,6 @@
 // Define all TokenTypes (Character ==> TokenType)
 export enum TokenType {
     // Literal Types
-    Null, 
     Number, 
     Identifier, 
 
@@ -25,7 +24,6 @@ export enum TokenType {
 // Define all Keywords (Record<string, TokenType> is for objects: "string": "TokenType")
 const KEYWORDS: Record<string, TokenType> = {
     let: TokenType.Let, 
-    null: TokenType.Null 
 }
 
 // Define the structure of a Token (must include the value & TokenType)
