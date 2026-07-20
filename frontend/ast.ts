@@ -17,7 +17,11 @@ OUTPUT:
 // Defines the structure of the language AST
 
 export type NodeType =
+  // STATEMENTS
   | "Program"
+  | "VarDeclaration"
+
+  // EXPRESSIONS
   | "NumericLiteral"
   | "Identifier"
   | "BinaryExpr";
@@ -37,6 +41,13 @@ Only one program will be contained in a file
 export interface Program extends Stmt {
   kind: "Program",
   body: Stmt[]
+}
+
+export interface VarDeclaration extends Stmt {
+  kind: "VarDeclaration",
+  constant: boolean, 
+  identifier: string, 
+  value?: Expr; // assume identifier is undefined
 }
 
 /* Expression will result in a value at runtime unlike Statements */
