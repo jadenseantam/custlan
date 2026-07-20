@@ -64,11 +64,13 @@ export function evaluate(astNode: Stmt): RuntimeVal {
 
 /*
 1. Evaluate Node from parser
-2. Iterate through all children 
+2. Iterate through all children, return last evaluated statement / null
+3. Evaluate numeric literal, null literal, binary expression, program
+4. Evaluate binary expression: get lhs & rhs, make sure they are a number ==> evaluate
 
 
 evaluate node (from parser)
 iterating through all children, return the last evaluated statement, if there is no children, it returns null
 Eval numeric literal, null literal, binary expr, program
 binary expression: get lhs & rhs, make sure they are a number ==> evaluate
-*/
+*/expand
