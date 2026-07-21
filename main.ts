@@ -1,19 +1,18 @@
 import Parser from "./frontend/parser.ts"
 import Environment from "./runtime/environment.ts";
 import { evaluate } from "./runtime/interpreter.ts";
-import { MK_NULL, MK_NUMBER, MK_BOOL } from "./runtime/values.ts";
+import { MK_NULL, MK_BOOL } from "./runtime/values.ts";
 
 repl()
 
-async function repl() {
+function repl() {
     const parser = new Parser();
     const env = new Environment()
     
     // declaring system variables
-    env.declareVar("x", MK_NUMBER(100))
-    env.declareVar("true", MK_BOOL(true))
-    env.declareVar("false", MK_BOOL(false))
-    env.declareVar("null", MK_NULL())
+    env.declareVar("true", MK_BOOL(true), true)
+    env.declareVar("false", MK_BOOL(false), true)
+    env.declareVar("null", MK_NULL(), true)
 
     // main repl
     console.log("Repl v0.1")
@@ -32,8 +31,13 @@ async function repl() {
 }
 
 /* 
-1. Lexing
-2. Define AST Types
-3. Build AST Logic
-4. Declare system variables (i.e. True, False, etc)
-*/
+1. Lexer
+2. AST Types
+3. Parser (using AST Types, produces AST)
+4. Interpreter (Evaluate AST)
+5. Environment Variables (true, false, null) (declareVar, assignVar, lookupVar, resolve)
+5a. Map for variables, Set for constants
+6. User Declarable Variables (VarDeclaration is a Stmt, Define Variable Keywords)
+6a. Parse the variable declaration, kind: "VarDeclaration", identifier, constant: boolean
+6b. Assign variable: Lexer --> Parser --> Interpreter
+*/ 

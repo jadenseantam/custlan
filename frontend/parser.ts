@@ -1,16 +1,25 @@
 // deno-lint-ignore-file no-explicit-any
-import { Stmt, Program, Expr, BinaryExpr, NumericLiteral, Identifier } from "./ast.ts"
-import { tokenize, Token, TokenType } from "./lexer.ts"
+import {
+    BinaryExpr,
+    Expr,
+    Identifier,
+    NumericLiteral,
+    Program,
+    Stmt,
+    VarDeclaration,
+    AssignmentExpr
+} from "./ast.ts";
+import { Token, tokenize, TokenType } from "./lexer.ts";
 
 export default class Parser {
-    private tokens: Token[] = []
+    private tokens: Token[] = [];
 
     private not_eof(): boolean {
-        return this.tokens[0].type != TokenType.EOF
+        return this.tokens[0].type != TokenType.EOF;
     } // check if the next token is not EOF
 
     private at() {
-        return this.tokens[0] as Token // as Token means represent tokens[0] as value & type
+        return this.tokens[0] as Token; // as Token means represent tokens[0] as value & type
     } // get current token
 
     private eat() {
@@ -21,34 +30,90 @@ export default class Parser {
     private expect(type: TokenType, err: any) {
         const prev = this.tokens.shift() as Token;
         if (!prev || prev.type != type) {
-            console.error("Parser Error:\n", err, prev, "Expecting: ", type)
-            Deno.exit(1)
+            console.error("Parser Error:\n", err, prev, "Expecting: ", type);
+            Deno.exit(1);
         }
 
-        return prev
+        return prev;
     } // remove and return current token, with optional argument for error handling
 
     public produceAST(sourceCode: string): Program {
-        this.tokens = tokenize(sourceCode)
+        this.tokens = tokenize(sourceCode);
         const program: Program = {
             kind: "Program",
-            body: []
-        }
+            body: [],
+        };
 
         // Parse until EOF
         while (this.not_eof()) {
-            program.body.push(this.parse_stmt())
+            program.body.push(this.parse_stmt());
         }
 
-        return program
-    } // the main function for the parser 
+        return program;
+    } // the main function for the parser
 
-    private parse_stmt(): Stmt {
-        return this.parse_expr();
+    private parse_stmt(): Stmt { // check for variables, if no, parse expr next
+        switch (this.at().type) {
+            case TokenType.Let:
+            case TokenType.Const:
+                return this.parse_var_declaration();
+            default:
+                return this.parse_expr();
+        }
+    }
+
+    // let ident;
+    // (let | const) ident = expr;
+    private parse_var_declaration(): Stmt {
+        const isConstant = this.eat().type == TokenType.Const; // check if var declaration is constant
+        const identifier = this.expect( // expect variable name
+                TokenType.Identifier,
+                "Expected identifier name following let | const keywords.",
+            ).value;
+
+        if (this.at().type == TokenType.Semicolon) { // if next character is semicolon --> statement ended --> if constant, throw error
+            this.eat(); // remove the semicolon
+            if (isConstant) {
+                throw "Must assign value to constant expression. No value provided. ";
+            }
+
+            return { // if no semicolon & not a constant, return 
+                kind: "VarDeclaration",
+                identifier,
+                constant: false,
+            } as VarDeclaration; // we can confirm this variable is not constant because if it's a constant, an error is thrown already.
+        }
+
+        this.expect( // expect equal token (otherwise it has to be declared)
+            TokenType.Equals,
+            "Expected equals token following identifier in variable declaraion. ",
+        );
+        const declaration = { // declare variable
+            kind: "VarDeclaration",
+            value: this.parse_expr(),
+            identifier,
+            constant: isConstant,
+        } as VarDeclaration;
+
+        this.expect(TokenType.Semicolon, "Variable declaration statement must end with semicolon"); // all variable declarations must end with semicolon
+        return declaration
     }
 
     private parse_expr(): Expr {
-        return this.parse_additive_expr();
+        return this.parse_assignment_expr()
+    }
+
+    private parse_assignment_expr(): Expr {
+        const left = this.parse_additive_expr() // TODO: switch this out with objectExpr
+        
+        if (this.at().type == TokenType.Equals) {
+            this.eat() // advance past the equal token
+            const value = this.parse_assignment_expr() // allow chaining
+
+            return { value, assigne: left, kind: "AssignmentExpr" } as AssignmentExpr
+        }
+
+        return left;   
     }
 
     private parse_additive_expr(): Expr {
@@ -61,25 +126,28 @@ export default class Parser {
                 kind: "BinaryExpr",
                 left,
                 right,
-                operator
-            } as BinaryExpr
+                operator,
+            } as BinaryExpr;
         }
 
         return left;
-    } // parse additive expr, get current value (left) --> get operator --> get right value --> return left (which is now a binary expr) 
+    } // parse additive expr, get current value (left) --> get operator --> get right value --> return left (which is now a binary expr)
 
     private parse_multiplicitive_expr(): Expr {
         let left = this.parse_primary_expr(); // Parse left side
 
-        while (this.at().value == "/" || this.at().value == "*" || this.at().value == "%") { // Check if the next operation is still *//
+        while (
+            this.at().value == "/" || this.at().value == "*" ||
+            this.at().value == "%"
+        ) { // Check if the next operation is still *//
             const operator = this.eat().value; // Get the current value (after the left --> operator)
             const right = this.parse_primary_expr(); // Parse right side
             left = {
                 kind: "BinaryExpr",
                 left,
                 right,
-                operator
-            } as BinaryExpr
+                operator,
+            } as BinaryExpr;
         }
 
         return left;
@@ -90,17 +158,29 @@ export default class Parser {
 
         switch (tk) { // this is the core logic for the ast in the body array
             case TokenType.Identifier:
-                return { kind: "Identifier", symbol: this.eat().value } as Identifier
+                return {
+                    kind: "Identifier",
+                    symbol: this.eat().value,
+                } as Identifier;
             case TokenType.Number:
-                return { kind: "NumericLiteral", value: parseFloat(this.eat().value) } as NumericLiteral
+                return {
+                    kind: "NumericLiteral",
+                    value: parseFloat(this.eat().value),
+                } as NumericLiteral;
             case TokenType.OpenParen: {
-                this.eat() // Eat OpenParen
+                this.eat(); // Eat OpenParen
                 const value = this.parse_expr();
-                this.expect(TokenType.CloseParen, "Unexpected token found inside parenthesised expression. Expected closing parenthesis.") // closing paren
-                return value
+                this.expect(
+                    TokenType.CloseParen,
+                    "Unexpected token found inside parenthesised expression. Expected closing parenthesis.",
+                ); // closing paren
+                return value;
             }
             default:
-                console.error("Unexpected token found during parsing!", this.at());
+                console.error(
+                    "Unexpected token found during parsing!",
+                    this.at(),
+                );
                 Deno.exit(1);
         }
     } // parse primary expr, check if the current token is an identifier, number, or open paren. If it's an identifier or number, return the corresponding AST node. If it's an open paren, parse the expression inside the parentheses and expect a closing paren. If none of these cases match, log an error and exit.
