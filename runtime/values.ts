@@ -1,5 +1,5 @@
 // define the types used in the runtime
-export type ValueType = "null" | "number" | "boolean"
+export type ValueType = "null" | "number" | "boolean" | "object"
 
 // runtime value is the type exists in custlan
 export interface RuntimeVal {
@@ -31,4 +31,9 @@ export interface BooleanVal extends RuntimeVal {
 
 export function MK_BOOL(b = true): BooleanVal {
     return { value: b, type: "boolean" }
+}
+
+export interface ObjectVal extends RuntimeVal {
+    type: "object", 
+    properties: Map<string, RuntimeVal>
 }

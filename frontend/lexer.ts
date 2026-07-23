@@ -16,8 +16,11 @@ export enum TokenType {
 
     // Grouping / Operators
     Equals,
+    Comma, 
+    Colon, 
     Semicolon, 
-    OpenParen, CloseParen,
+    OpenParen, CloseParen, // ()
+    OpenBrace, CloseBrace, // {}
     BinaryOperator, 
     EOF, 
 
@@ -50,7 +53,7 @@ function isint (src: string) {
 }
 
 function isskippable(src: string) {
-    return src == '' || src == ' ' || src == '\n' || src == '\t' 
+    return src == '' || src == ' ' || src == '\n' || src == '\t' || src == '\r'
 }
 
 // Main function for Character ==> TokenType process
@@ -64,12 +67,20 @@ export function tokenize(sourceCode: string): Token[] {
             tokens.push(token(src.shift(), TokenType.OpenParen))
         } else if (src[0] == ")") {
             tokens.push(token(src.shift(), TokenType.CloseParen))
+        } else if (src[0] == "{") {
+            tokens.push(token(src.shift(), TokenType.OpenBrace))
+        } else if (src[0] == "}") {
+            tokens.push(token(src.shift(), TokenType.CloseBrace))
         } else if (src[0] == "+" || src[0] == "-" || src[0] == "*" || src[0] == "/" || src[0] == "%") {
             tokens.push(token(src.shift(), TokenType.BinaryOperator))
         } else if (src[0] == "=") {
             tokens.push(token(src.shift(), TokenType.Equals))
         } else if (src[0] == ";") {
             tokens.push(token(src.shift(), TokenType.Semicolon))
+        } else if (src[0] == ":") {
+            tokens.push(token(src.shift(), TokenType.Colon))
+        } else if (src[0] == ",") {
+            tokens.push(token(src.shift(), TokenType.Comma))
         }else {
             // Handle multicharacter tokens
             if (isint(src[0])) {
