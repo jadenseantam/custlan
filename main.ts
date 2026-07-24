@@ -1,18 +1,24 @@
 import Parser from "./frontend/parser.ts"
-import Environment from "./runtime/environment.ts";
+import { createGlobalEnv } from "./runtime/environment.ts";
 import { evaluate } from "./runtime/interpreter.ts";
-import { MK_NULL, MK_BOOL } from "./runtime/values.ts";
 
-repl()
+run("./test.txt")
+// repl()
 
-function repl() {
+async function run(filename: string) {
     const parser = new Parser();
-    const env = new Environment()
-    
-    // declaring system variables
-    env.declareVar("true", MK_BOOL(true), true)
-    env.declareVar("false", MK_BOOL(false), true)
-    env.declareVar("null", MK_NULL(), true)
+    const env = createGlobalEnv()
+
+
+    const input = await Deno.readTextFile(filename)
+    const program = parser.produceAST(input)
+    const result = evaluate(program, env)
+    console.log(result)
+}
+
+function _repl() {
+    const parser = new Parser();
+    const env = createGlobalEnv()
 
     // main repl
     console.log("Repl v0.1")
@@ -40,4 +46,5 @@ function repl() {
 6. User Declarable Variables (VarDeclaration is a Stmt, Define Variable Keywords)
 6a. Parse the variable declaration, kind: "VarDeclaration", identifier, constant: boolean
 6b. Assign variable: Lexer --> Parser --> Interpreter
+7. Object & User Defined Structures: Lexer --> Parser --> Interpreter
 */ 

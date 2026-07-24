@@ -1,7 +1,7 @@
 import { NumberVal, RuntimeVal } from "./values.ts";
-import { Program, BinaryExpr, NumericLiteral, Stmt, Identifier, VarDeclaration, AssignmentExpr } from "../frontend/ast.ts";
+import { Program, BinaryExpr, NumericLiteral, Stmt, Identifier, VarDeclaration, AssignmentExpr, ObjectLiteral } from "../frontend/ast.ts";
 import Environment from "./environment.ts";
-import { eval_identifier, evaluate_binary_expr, eval_assignment } from "./eval/expressions.ts";
+import { eval_identifier, evaluate_binary_expr, eval_assignment, eval_object_expr } from "./eval/expressions.ts";
 import { eval_program, eval_var_declaration } from "./eval/statements.ts";
 
 
@@ -14,6 +14,8 @@ export function evaluate(astNode: Stmt, env: Environment): RuntimeVal { // this 
             } as NumberVal;
         case "Identifier": 
             return eval_identifier(astNode as Identifier, env)
+        case "ObjectLiteral": 
+            return eval_object_expr(astNode as ObjectLiteral, env)
         case "BinaryExpr": 
             return evaluate_binary_expr(astNode as BinaryExpr, env)
         case "AssignmentExpr":
@@ -23,7 +25,7 @@ export function evaluate(astNode: Stmt, env: Environment): RuntimeVal { // this 
         case "VarDeclaration": 
             return eval_var_declaration(astNode as VarDeclaration, env)
         default:
-            console.error("This AST Node has not yet been set up for interpretation.", astNode)
+            console.error("This AST Node has not yet been set up for interpretation.", "\n",  astNode)
             Deno.exit(1)
     }
 }
