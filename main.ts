@@ -1,5 +1,5 @@
 import Parser from "./frontend/parser.ts"
-import Environment, { createGlobalEnv } from "./runtime/environment.ts";
+import { createGlobalEnv } from "./runtime/environment.ts";
 import { evaluate } from "./runtime/interpreter.ts";
 
 run("./test.txt")
@@ -46,5 +46,5 @@ function _repl() {
 6. User Declarable Variables (VarDeclaration is a Stmt, Define Variable Keywords)
 6a. Parse the variable declaration, kind: "VarDeclaration", identifier, constant: boolean
 6b. Assign variable: Lexer --> Parser --> Interpreter
-7. Object & User Defined Structures
+7. Object & User Defined Structures: Lexer --> Parser --> Interpreter
 */ 
